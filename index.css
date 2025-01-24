@@ -168,3 +168,27 @@ footer a:hover {
         font-size: 1.75rem;
     }
 }
+/* Updated Title Colors */
+h1, h2, h3 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #4A0E4E;  /* Dark Purple Color */
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #5D3FD3;  /* Slightly Brighter Purple for Main Title */
+}
+
+h2 {
+    font-size: 2rem;
+    color: #4A0E4E;  /* Dark Purple */
+    border-bottom: 2px solid #4A0E4E;  /* Optional: Add a subtle underline */
+    padding-bottom: 0.5rem;
+}
+
+/* Optional: Add hover effect for titles */
+h1:hover, h2:hover {
+    color: #7E3FD3;  /* Slightly lighter purple on hover */
+    transition: color 0.3s ease;
+}
