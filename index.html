@@ -66,8 +66,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 22px 6vw;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.88);
     border-bottom: 1px solid var(--line);
   }
  
@@ -369,8 +368,7 @@
     height: 100%;
     border-radius: 12px;
     border: 1px solid var(--line);
-    background: var(--surface);
-    backdrop-filter: blur(8px);
+    background: rgba(22, 15, 32, 0.85);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -548,8 +546,7 @@
       left: 0;
       flex-direction: column;
       gap: 0;
-      background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.95);
       border-bottom: 1px solid var(--line);
       transform: translateY(-110%);
       transition: transform .25s ease;
@@ -655,7 +652,7 @@
 <section id="contact">
   <div class="section-head"><span class="section-num">04</span><h2>contact</h2></div>
   <div class="contact-wrap">
-    <p>Have a project in mind, want to collaborate on a jam, or just want to say hi? Fill this in — it's a demo form for now and doesn't send anywhere until you wire it up.</p>
+    <p>Have a project in mind, want to collaborate on a jam, or just want to say hi? Fill this in and hit send — it'll open Gmail with your message ready to go.</p>
     <form id="contact-form">
       <div class="field">
         <label for="name">name</label>
@@ -797,7 +794,7 @@
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(1);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
  
@@ -853,9 +850,9 @@
  
           float f = 2.0 + fbm(p + vec2(iTime * 5.0, 0.0)) * 0.5;
  
-          for (float i = 0.0; i < 35.0; i++) {
+          for (float i = 0.0; i < 20.0; i++) {
             v = p + cos(i * i + (iTime + p.x * 0.08) * 0.025 + i * vec2(13.0, 11.0)) * 3.5 + vec2(sin(iTime * 3.0 + i) * 0.003, cos(iTime * 3.5 - i) * 0.003);
-            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 35.0));
+            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 20.0));
  
             /* single locked purple hue for every streak — only brightness varies, not hue */
             vec3 purple = vec3(0.62, 0.12, 0.98);
@@ -863,7 +860,7 @@
             vec4 auroraColors = vec4(purple * glow, 1.0);
  
             vec4 currentContribution = auroraColors * exp(sin(i * i + iTime * 0.8)) / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));
-            float thinnessFactor = smoothstep(0.0, 1.0, i / 35.0) * 0.6;
+            float thinnessFactor = smoothstep(0.0, 1.0, i / 20.0) * 0.6;
             o += currentContribution * (1.0 + tailNoise * 0.8) * thinnessFactor;
           }
  
@@ -879,11 +876,18 @@
  
     let frameId;
     function animate(){
+      if(document.hidden){ frameId = null; return; } // pause entirely while tab is in the background
       material.uniforms.iTime.value += 0.016;
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
     }
     animate();
+
+    document.addEventListener('visibilitychange', function(){
+      if(!document.hidden && !frameId){
+        animate();
+      }
+    });
  
     window.addEventListener('resize', function(){
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -963,12 +967,19 @@
     }
 
     function step(){
+      if(document.hidden){ autoplayId = null; return; }
       if(!isDragging && Date.now() - lastInteraction > 1200){
         rotation += 0.05;
         applyRotation(rotation, false);
       }
       autoplayId = requestAnimationFrame(step);
     }
+
+    document.addEventListener('visibilitychange', function(){
+      if(!document.hidden && !autoplayId){
+        step();
+      }
+    });
 
     // Drag / swipe to spin
     rotor.addEventListener('pointerdown', (e) => {
