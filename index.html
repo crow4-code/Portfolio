@@ -1,166 +1,1038 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Portfolio</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thomas Dawson — Game Developer Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --bg: #000000;
+    --surface: rgba(18, 12, 26, 0.55);
+    --surface-2: rgba(24, 16, 34, 0.6);
+    --text: #ece7f7;
+    --muted: #9c92b3;
+    --accent: #a855f7;
+    --accent-dim: #5b2a8c;
+    --line: rgba(255, 255, 255, 0.12);
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
  
-        body, html {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #a9a9a9;
-            height: 100%;
-            overflow-x: hidden;
-        }
+  *{ margin:0; padding:0; box-sizing:border-box; }
  
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://cdn.imgchest.com/files/yq9c3dneom4.gif');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -1;
-        }
+  html{ scroll-behavior: smooth; }
+ 
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+ 
+  a{ color: inherit; text-decoration: none; }
+ 
+  ::selection{ background: var(--accent); color: #000000; }
+ 
+  /* ---------- SHADER BACKGROUND ---------- */
+  #shader-bg{
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: #000000;
+  }
+  #shader-bg canvas{
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  #shader-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 15%, rgba(0,0,0,0.25), rgba(0,0,0,0.82) 65%, rgba(0,0,0,0.94));
+    pointer-events: none;
+  }
+ 
+  /* ---------- NAV ---------- */
+  header{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 6vw;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+ 
+  .logo{
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo .dot{
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    animation: blink 1.6s step-start infinite;
+  }
+  @keyframes blink{ 50%{ opacity: 0.15; } }
+ 
+  nav ul{
+    list-style: none;
+    display: flex;
+    gap: 34px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  nav a{
+    color: var(--muted);
+    transition: color .2s ease;
+    position: relative;
+  }
+  nav a:hover{ color: var(--text); }
+  nav a::before{ content: "./"; color: var(--accent-dim); }
+  nav a.active{ color: var(--accent); }
+ 
+  .nav-toggle{
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+  }
+  .nav-toggle span{
+    width: 22px; height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: transform .2s ease, opacity .2s ease;
+  }
+  .nav-toggle.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2){ opacity: 0; }
+  .nav-toggle.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+ 
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 6vw;
+    position: relative;
+  }
+ 
+  .hero-inner{ max-width: 760px; }
+ 
+  .prompt-line{
+    font-family: var(--mono);
+    color: var(--accent-dim);
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+    letter-spacing: 0.02em;
+  }
+  .prompt-line span{ color: var(--accent); }
+ 
+  .hero h1{
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    line-height: 1.08;
+    margin-bottom: 20px;
+  }
+  .hero h1 .cursor{
+    display: inline-block;
+    width: 0.5ch;
+    background: var(--accent);
+    animation: blink 1s step-start infinite;
+    margin-left: 2px;
+  }
+ 
+  .hero p.role{
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 55ch;
+    margin-bottom: 34px;
+  }
+  .hero p.role strong{ color: var(--text); font-weight: 600; }
+ 
+  .hero-cta{
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+ 
+  .btn{
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 13px 26px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform .15s ease, background .2s ease, border-color .2s ease;
+  }
+  .btn-primary{
+    background: var(--accent);
+    color: #14091f;
+    font-weight: 600;
+  }
+  .btn-primary:hover{ transform: translateY(-2px); }
+  .btn-outline{
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .btn-outline:hover{
+    border-color: var(--accent-dim);
+    transform: translateY(-2px);
+  }
+ 
+  .scroll-hint{
+    position: absolute;
+    bottom: 40px; left: 6vw;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .scroll-hint .bar{
+    width: 1px; height: 30px;
+    background: linear-gradient(var(--accent-dim), transparent);
+  }
+ 
+  /* ---------- SECTION SHELL ---------- */
+  section{ padding: 120px 6vw; border-top: 1px solid var(--line); scroll-margin-top: 84px; }
+  .section-head{
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 50px;
+  }
+  .section-num{
+    font-family: var(--mono);
+    color: var(--accent-dim);
+    font-size: 0.95rem;
+  }
+  .section-head h2{
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+ 
+  /* ---------- ABOUT (terminal card) ---------- */
+  .about-grid{
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 60px;
+    align-items: start;
+  }
+ 
+  .terminal{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .terminal-bar{
+    display: flex;
+    gap: 7px;
+    padding: 12px 16px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .terminal-bar span{
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #4a3a66;
+  }
+  .terminal-body{
+    padding: 22px 24px 28px;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .terminal-body .cmd{ color: var(--accent); }
+  .terminal-body .val{ color: var(--text); }
+  .terminal-body p{ margin-bottom: 10px; }
+ 
+  .about-text p{
+    color: var(--muted);
+    margin-bottom: 18px;
+    max-width: 52ch;
+  }
+  .about-text strong{ color: var(--text); }
+ 
+  /* ---------- SKILLS ---------- */
+  .skills-list{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .skill-item{
+    background: rgba(0, 0, 0, 0.55);
+    padding: 22px 24px;
+  }
+  .skill-item .fname{
+    font-family: var(--mono);
+    color: var(--text);
+    font-size: 0.95rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .skill-item .fname::before{ content:"›"; color: var(--accent); }
+  .skill-item .flevel{
+    margin-top: 10px;
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .skill-item .flevel i{
+    display:block; height:100%;
+    background: var(--accent);
+  }
+ 
+  /* ---------- PROJECTS: SPIN WHEEL GALLERY ---------- */
+  .wheel-wrap{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+  }
+  .wheel-stage{
+    position: relative;
+    width: 100%;
+    max-width: 820px;
+    height: 480px;
+    margin: 0 auto;
+    perspective: 1600px;
+    touch-action: pan-y;
+  }
+  .wheel-rotor{
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+    cursor: grab;
+    transition: transform .55s cubic-bezier(.22,.9,.32,1);
+  }
+  .wheel-rotor.dragging{ transition: none; cursor: grabbing; }
+  .wheel-item{
+    position: absolute;
+    width: 280px;
+    height: 440px;
+    left: 50%;
+    top: 50%;
+    margin-left: -140px;
+    margin-top: -220px;
+    transition: opacity .3s linear;
+  }
+  .wheel-void-glow{
+    position: absolute;
+    inset: -60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,85,247,0.4), rgba(88,28,135,0.15) 45%, transparent 72%);
+    filter: blur(36px);
+    opacity: 0.45;
+    transform: scale(1);
+    transition: opacity .45s ease, transform .45s ease, filter .45s ease;
+    animation: voidPulse 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes voidPulse{
+    0%, 100%{ transform: scale(1); }
+    50%{ transform: scale(1.06); }
+  }
+  .wheel-stage.spinning .wheel-void-glow{
+    opacity: 0.9;
+    filter: blur(48px);
+    transform: scale(1.14);
+    animation-duration: 2s;
+  }
+  .wheel-card{
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,.55);
+    transition: filter .3s linear, transform .3s linear;
+  }
+  .wheel-card-cover{
+    height: 150px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(168,85,247,.32), rgba(0,0,0,.6));
+    border-bottom: 1px solid var(--line);
+  }
+  .wheel-card-cover svg{
+    width: 46px; height: 46px;
+    stroke: var(--accent);
+    opacity: .9;
+  }
+  .wheel-card-body{
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-dim) transparent;
+  }
+  .wheel-card-body::-webkit-scrollbar{ width: 5px; }
+  .wheel-card-body::-webkit-scrollbar-thumb{ background: var(--accent-dim); border-radius: 4px; }
+  .wheel-card-top{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    font-family: var(--mono);
+    min-width: 0;
+  }
+  .wheel-card-top h3{
+    font-size: 1.05rem;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .wheel-card-top .tag{
+    font-size: 0.65rem;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    flex-shrink: 0;
+    max-width: 45%;
+    text-align: center;
+  }
+  .wheel-card-body p{
+    color: var(--muted);
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+  }
+  .wheel-stack{
+    display: flex; gap: 8px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+  }
+  .wheel-stack span{
+    border: 1px solid var(--line);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .wheel-link{
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--accent);
+  }
+  .wheel-link::after{ content: " →"; }
+  .wheel-controls{ display: flex; align-items: center; gap: 20px; }
+  .wheel-btn{
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s ease, transform .15s ease;
+  }
+  .wheel-btn:hover{ border-color: var(--accent-dim); transform: translateY(-2px); }
+  .wheel-hint{
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+  }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba;
-            z-index: 0;
-        }
+  @media (max-width: 620px){
+    .wheel-stage{ height: 420px; }
+    .wheel-item{ width: 220px; height: 380px; margin-left: -110px; margin-top: -190px; }
+  }
  
-        header {
-            background-color: rgb(8,8,8);
-            color: #a9a9a9;
-            padding: 1rem 0;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
+  /* ---------- CONTACT ---------- */
+  .contact-wrap{
+    max-width: 640px;
+  }
+  .contact-wrap > p{ color: var(--muted); margin-bottom: 36px; max-width: 55ch; }
  
-        header h1 {
-            font-size: 2.5rem;
-        }
+  form{ display: flex; flex-direction: column; gap: 20px; }
+  .field label{
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent-dim);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .field label::before{ content: "$ "; color: var(--muted); }
+  .field input, .field textarea{
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    padding: 13px 16px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color .2s ease;
+  }
+  .field input:focus, .field textarea:focus{ border-color: var(--accent-dim); }
+  .field textarea{ resize: vertical; min-height: 120px; }
  
-        nav {
-            display: flex;
-            justify-content: center;
-            background: rgb(36,33,36);
-            padding: 0.5rem 0;
-            position: relative;
-            z-index: 1;
-        }
+  .send-btn{
+    align-self: flex-start;
+    background: var(--accent);
+    color: #14091f;
+    font-family: var(--mono);
+    font-weight: 600;
+    border: none;
+    padding: 14px 30px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+  .send-btn:hover{ transform: translateY(-2px); }
  
-        nav a {
-            color: #a9a9a9;
-            text-decoration: none;
-            margin: 0 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
+  .form-note{
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 6px;
+    min-height: 1.2em;
+  }
  
-        nav a:hover {
-            background: #808080;
-        }
+  footer{
+    padding: 40px 6vw;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  footer .socials{ display: flex; gap: 20px; }
+  footer .socials a:hover{ color: var(--accent); }
  
-        .container {
-            max-width: 1100px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            position: relative;
-            z-index: 1;
-        }
- 
-        .about, .skills, .projects, .contact {
-            margin-bottom: 2rem;
-            background: rgb(8,8,8);
-            padding: 1rem;
-            border-radius: 5px;
-        }
- 
-        h2 {
-            margin-bottom: 1rem;
-            color: #a9a9a9;
-        }
- 
-        .skills ul, .projects ul {
-            list-style: none;
-            padding: 0;
-        }
- 
-        .skills li, .projects li {
-            margin: 0.5rem 0;
-            background: #242124;
-            padding: 0.75rem;
-            border: 1px solid #242124;
-            border-radius: 5px;
-        }
-        <section id="skills" class="skills">
-        <h2>Skills</h2>
-        <ul>
-            <li>Programming Languages: Python, JavaScript, Java</li>
-            <li>Frameworks: React, Node.js, Django</li>
-            <li>Databases: MySQL, MongoDB</li>
-            <li>Tools: Git, Docker, AWS</li>
-      }
-    </style>
+  @media (max-width: 800px){
+    .nav-toggle{ display: flex; }
+    nav ul{
+      position: fixed;
+      top: 68px;
+      right: 0;
+      left: 0;
+      flex-direction: column;
+      gap: 0;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      transform: translateY(-110%);
+      transition: transform .25s ease;
+      z-index: 99;
+    }
+    nav ul.open{ transform: translateY(0); }
+    nav ul li{ border-top: 1px solid var(--line); }
+    nav ul li:first-child{ border-top: none; }
+    nav ul a{
+      display: block;
+      padding: 18px 6vw;
+      font-size: 0.95rem;
+    }
+    .about-grid{ grid-template-columns: 1fr; }
+    footer{ flex-direction: column; gap: 14px; text-align:center; }
+  }
+</style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="overlay"></div>
-    <header>
-        <h1>Thomas</h1>
-        <p>Software Developer | Tech Enthusiast | Problem Solver</p>
-    </header>
-    <nav>
-        <a href="#about">About</a>
-        <a href="#skills">Skills</a>
-        <a href="#projects">Projects</a>
-        <a href="#contact">Contact</a>
-    </nav>
-    <div class="container">
-        <section id="about" class="about">
-            <h2>About Me</h2>
-            <p>Hi, I'm Thomas, a passionate software developer with a knack for building efficient and scalable applications. With experience in multiple programming languages and frameworks, I thrive on solving complex problems and creating innovative solutions.</p>
-        </section>
  
-        <section id="skills" class="skills">
-            <h2>Skills</h2>
-            <ul>
-                <li>Programming Languages: Python, JavaScript, Java</li>
-                <li>Frameworks: React, Node.js, Django</li>
-                <li>Databases: MySQL, MongoDB</li>
-                <li>Tools: Git, Docker, AWS</li>
-            </ul>
-        </section>
+<div id="shader-bg"></div>
+<div id="shader-overlay"></div>
  
-        <section id="projects" class="projects">
-            <h2>Projects</h2>
-            <ul>
-                <li><strong>Portfolio Website:</strong> A personal website to showcase my projects and skills.</li>
-                <li><strong>E-commerce Platform:</strong> Built a scalable platform for small businesses to sell their products online.</li>
-                <li><strong>Chat Application:</strong> Developed a real-time chat app using Node.js and WebSocket.</li>
-            </ul>
-        </section>
+<header>
+  <div class="logo"><span class="dot"></span>crow.callz</div>
+  <nav>
+    <ul id="nav-list">
+      <li><a href="#about">about</a></li>
+      <li><a href="#skills">skills</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+  </nav>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
  
-        <section id="contact" class="contact">
-            <h2>Contact Me</h2>
-            <p>If you'd like to collaborate or just say hi, feel free to <a href="mailto:johndoe@example.com">email me</a> or connect with me on <a href="https://www.linkedin.com">LinkedIn</a>.</p>
-        </section>
+<section class="hero">
+  <div class="hero-inner">
+    <div class="prompt-line">crow@portfolio <span>~</span> % whoami</div>
+    <h1 id="typed-name">Thomas Dawson<span class="cursor">&nbsp;</span></h1>
+    <p class="role">I'm a <strong>game developer</strong> who aspires to build worlds that people can get lost in, utilizing Unity and C+. Turning imagination into playable games.</p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">Play My Games</a>
+      <a href="#contact" class="btn btn-outline">Let's Connect</a>
     </div>
+  </div>
+  <div class="scroll-hint"><div class="bar"></div>scroll</div>
+</section>
+ 
+<section id="about">
+  <div class="section-head"><span class="section-num">01</span><h2>about</h2></div>
+  <div class="about-grid">
+    <div class="terminal">
+      <div class="terminal-bar"><span></span><span></span><span></span></div>
+      <div class="terminal-body">
+        <p><span class="cmd">$</span> crow.json</p>
+        <p>{</p>
+        <p>&nbsp;&nbsp;"role": <span class="val">"Game Developer"</span>,</p>
+        <p>&nbsp;&nbsp;"engines": <span class="val">"Unity, Unreal, Godot"</span>,</p>
+        <p>&nbsp;&nbsp;"based_in": <span class="val">"Manchester"</span>,</p>
+        <p>&nbsp;&nbsp;"status": <span class="val">"open to work"</span></p>
+        <p>}</p>
+      </div>
+    </div>
+    <div class="about-text">
+      <p>My love for game design started young, right after I got my first console — an Xbox 360. I'd rush to play it every day after school, but what really stuck with me wasn't just playing games, it was imagining how they were made. Over time, that curiosity turned into something more: the real thrill for me is building something, testing it, and feeling proud of what I created.<p>
+
+      <p> I'm especially drawn to horror and psychological games — experiences that get under your skin and make you think — as well as open-world, story-driven games where players have the freedom to explore and shape their own path.</p>
+      <p>Right now, I'm working on an idea I've had for a while — <strong> a horror game inspired by Little Nightmares, but darker and more visceral.</strong> It centers on psychological torment, blending unsettling side effects with an oppressive, dread-filled atmosphere. I'm exploring a soundtrack built around the names of side effects themselves, using them almost like a haunting motif throughout the game. There's also a relentless creature (or human) stalking the player — designed to feel unpredictable, with jump scares that keep you constantly on edge rather than following a pattern you can anticipate.</p>
+    </div>
+  </div>
+</section>
+ 
+<section id="skills">
+  <div class="section-head"><span class="section-num">02</span><h2>skills</h2></div>
+  <div class="skills-list">
+    <div class="skill-item"><div class="fname">unity.cs</div><div class="flevel"><i style="width:70%"></i></div></div>
+    <div class="skill-item"><div class="fname">unreal.cpp</div><div class="flevel"><i style="width:20%"></i></div></div>
+    <div class="skill-item"><div class="fname">c-sharp.cs</div><div class="flevel"><i style="width:35%"></i></div></div>
+    <div class="skill-item"><div class="fname">cpp.cpp</div><div class="flevel"><i style="width:50%"></i></div></div>
+    <div class="skill-item"><div class="fname">game-design.doc</div><div class="flevel"><i style="width:48%"></i></div></div>
+    <div class="skill-item"><div class="fname">shaders.hlsl</div><div class="flevel"><i style="width:40%"></i></div></div>
+  </div>
+</section>
+ 
+<section id="projects">
+  <div class="section-head"><span class="section-num">03</span><h2>projects</h2></div>
+  <div class="wheel-wrap">
+    <div class="wheel-stage" id="wheel-stage">
+      <div class="wheel-void-glow"></div>
+      <div class="wheel-rotor" id="wheel-rotor"></div>
+    </div>
+    <div class="wheel-controls">
+      <button class="wheel-btn" id="wheel-prev" aria-label="Previous project">‹</button>
+      <button class="wheel-btn" id="wheel-next" aria-label="Next project">›</button>
+    </div>
+    <p class="wheel-hint">Scroll, drag, or use the arrows to spin — the nearest project locks to the center.</p>
+  </div>
+</section>
+ 
+<section id="contact">
+  <div class="section-head"><span class="section-num">04</span><h2>contact</h2></div>
+  <div class="contact-wrap">
+    <p>Have a project in mind, want to collaborate on a jam, or just want to say hi? Fill this in — it's a demo form for now and doesn't send anywhere until you wire it up.</p>
+    <form id="contact-form">
+      <div class="field">
+        <label for="name">name</label>
+        <input type="text" id="name" name="name" placeholder="Jane Doe" required>
+      </div>
+      <div class="field">
+        <label for="email">email</label>
+        <input type="email" id="email" name="email" placeholder="jane@example.com" required>
+      </div>
+      <div class="field">
+        <label for="message">message</label>
+        <textarea id="message" name="message" placeholder="Say something..." required></textarea>
+      </div>
+      <button type="submit" class="send-btn" id="send-btn">send_message()</button>
+      <div class="form-note" id="form-note"></div>
+    </form>
+  </div>
+</section>
+ 
+<footer>
+  <div>© <span id="year"></span> Thomas Dawson — built with HTML, CSS &amp; JS</div>
+  <div class="socials">
+    <a href="https://github.com/crow4-code" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.linkedin.com/in/thomas-dawson-750101365/" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=thomasd110608%40gmail.com" target="_blank" rel="noopener">Email</a>
+  </div>
+</footer>
+ 
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+ 
+  // Mobile nav toggle
+  const navToggle = document.getElementById('nav-toggle');
+  const navList = document.getElementById('nav-list');
+  navToggle.addEventListener('click', function(){
+    const isOpen = navList.classList.toggle('open');
+    navToggle.classList.toggle('open', isOpen);
+    navToggle.setAttribute('aria-expanded', isOpen);
+  });
+  navList.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navList.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+ 
+  // Highlight the nav link for whichever section is in view
+  const navLinks = Array.from(navList.querySelectorAll('a'));
+  const navSections = navLinks
+    .map(link => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+ 
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = navLinks.find(a => a.getAttribute('href') === id);
+      if(!link) return;
+      if(entry.isIntersecting){
+        navLinks.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+ 
+  navSections.forEach(sec => navObserver.observe(sec));
+ 
+  // Typing effect for hero name
+  const el = document.getElementById('typed-name');
+  const fullText = "Thomas Dawson";
+  const cursor = el.querySelector('.cursor');
+  let i = 0;
+  el.childNodes[0].textContent = "";
+  function type(){
+    if(i <= fullText.length){
+      el.childNodes[0].textContent = fullText.slice(0, i);
+      i++;
+      setTimeout(type, 90);
+    }
+  }
+  type();
+ 
+  // Contact form — opens a pre-filled Gmail compose window in a new tab.
+  // No backend, no third-party service, no cost, and no dependency on the
+  // visitor having a desktop email app configured (mailto: links silently
+  // fail without one — this doesn't).
+  const form = document.getElementById('contact-form');
+  const note = document.getElementById('form-note');
+  const YOUR_EMAIL = 'thomasd110608@gmail.com';
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const message = document.getElementById('message').value.trim();
+
+    const subject = encodeURIComponent(`Portfolio contact from ${name}`);
+    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(YOUR_EMAIL)}&su=${subject}&body=${body}`;
+
+    const win = window.open(gmailUrl, '_blank');
+
+    if(win){
+      note.textContent = "> opening Gmail in a new tab — sign in if asked, then hit send there.";
+      form.reset();
+    } else {
+      // Popup blocked — give a manual link instead of failing silently
+      note.innerHTML = `> your browser blocked the popup — <a href="${gmailUrl}" target="_blank" style="color:var(--accent); text-decoration:underline;">click here to open Gmail</a> and send it manually.`;
+    }
+  });
+ 
+  // Fade-in on scroll for sections (single subtle pass)
+  const sections = document.querySelectorAll('section:not(.hero)');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.style.opacity = 1;
+        entry.target.style.transform = 'translateY(0)';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+ 
+  sections.forEach(sec => {
+    sec.style.opacity = 0;
+    sec.style.transform = 'translateY(24px)';
+    sec.style.transition = 'opacity .6s ease, transform .6s ease';
+    observer.observe(sec);
+  });
+</script>
+ 
+<script>
+  // Void-purple aurora shader background (Three.js, vanilla JS)
+  (function(){
+    if (typeof THREE === 'undefined') return; // fails quietly if CDN is blocked
+ 
+    const container = document.getElementById('shader-bg');
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+ 
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        iTime: { value: 0 },
+        iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+      },
+      vertexShader: `
+        void main() {
+          gl_Position = vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float iTime;
+        uniform vec2 iResolution;
+ 
+        #define NUM_OCTAVES 3
+ 
+        float rand(vec2 n) {
+          return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+        }
+ 
+        float noise(vec2 p) {
+          vec2 ip = floor(p);
+          vec2 u = fract(p);
+          u = u*u*(3.0-2.0*u);
+ 
+          float res = mix(
+            mix(rand(ip), rand(ip + vec2(1.0, 0.0)), u.x),
+            mix(rand(ip + vec2(0.0, 1.0)), rand(ip + vec2(1.0, 1.0)), u.x), u.y);
+          return res * res;
+        }
+ 
+        float fbm(vec2 x) {
+          float v = 0.0;
+          float a = 0.3;
+          vec2 shift = vec2(100);
+          mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+          for (int i = 0; i < NUM_OCTAVES; ++i) {
+            v += a * noise(x);
+            x = rot * x * 2.0 + shift;
+            a *= 0.4;
+          }
+          return v;
+        }
+ 
+        void main() {
+          vec2 shake = vec2(sin(iTime * 1.2) * 0.005, cos(iTime * 2.1) * 0.005);
+          vec2 p = ((gl_FragCoord.xy + shake * iResolution.xy) - iResolution.xy * 0.5) / iResolution.y * mat2(6.0, -4.0, 4.0, 6.0);
+          vec2 v;
+          vec4 o = vec4(0.0);
+ 
+          float f = 2.0 + fbm(p + vec2(iTime * 5.0, 0.0)) * 0.5;
+ 
+          for (float i = 0.0; i < 35.0; i++) {
+            v = p + cos(i * i + (iTime + p.x * 0.08) * 0.025 + i * vec2(13.0, 11.0)) * 3.5 + vec2(sin(iTime * 3.0 + i) * 0.003, cos(iTime * 3.5 - i) * 0.003);
+            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 35.0));
+ 
+            /* single locked purple hue for every streak — only brightness varies, not hue */
+            vec3 purple = vec3(0.62, 0.12, 0.98);
+            float glow = 0.55 + 0.45 * sin(i * 0.3 + iTime * 0.4);
+            vec4 auroraColors = vec4(purple * glow, 1.0);
+ 
+            vec4 currentContribution = auroraColors * exp(sin(i * i + iTime * 0.8)) / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));
+            float thinnessFactor = smoothstep(0.0, 1.0, i / 35.0) * 0.6;
+            o += currentContribution * (1.0 + tailNoise * 0.8) * thinnessFactor;
+          }
+ 
+          o = tanh(pow(o / 100.0, vec4(1.6)));
+          gl_FragColor = o * 1.4;
+        }
+      `
+    });
+ 
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+ 
+    let frameId;
+    function animate(){
+      material.uniforms.iTime.value += 0.016;
+      renderer.render(scene, camera);
+      frameId = requestAnimationFrame(animate);
+    }
+    animate();
+ 
+    window.addEventListener('resize', function(){
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      material.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
+    });
+  })();
+</script>
+
+<script>
+  // Spin-wheel project gallery — vanilla JS take on a 3D circular carousel
+  (function(){
+    const stage = document.getElementById('wheel-stage');
+    const rotor = document.getElementById('wheel-rotor');
+    if(!stage || !rotor) return;
+
+    // Edit this list to add/change projects — no other code needs to change
+    const projects = [
+      { title: 'code_name_hide', tag: '3D Horror Game', desc: 'Coming Soon', stack: ['Unity', 'C++'] },
+      { title: 'game-title-two', tag: '???', desc: 'Coming Soon', stack: ['Unreal', 'C#'] },
+      { title: 'game-title-three', tag: '???', desc: 'Coming Soon', stack: ['Godot', 'GDScript'] }
+    ];
+
+    const controllerIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="4"></rect><path d="M7 10v4M5 12h4"></path><circle cx="16" cy="10.5" r="1"></circle><circle cx="18.5" cy="13" r="1"></circle></svg>`;
+
+    const n = projects.length;
+    const anglePerItem = 360 / n;
+    const radius = window.innerWidth < 620 ? 240 : 380;
+
+    projects.forEach((p, i) => {
+      const angle = i * anglePerItem;
+      const item = document.createElement('div');
+      item.className = 'wheel-item';
+      item.dataset.angle = angle;
+      item.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+      item.innerHTML = `
+        <div class="wheel-card">
+          <div class="wheel-card-cover">${controllerIcon}</div>
+          <div class="wheel-card-body">
+            <div class="wheel-card-top"><h3>${p.title}</h3><span class="tag">${p.tag}</span></div>
+            <p>${p.desc}</p>
+            <div class="wheel-stack">${p.stack.map(s => `<span>${s}</span>`).join('')}</div>
+            <a href="#" class="wheel-link">Play project</a>
+          </div>
+        </div>
+      `;
+      rotor.appendChild(item);
+    });
+
+    const items = Array.from(rotor.querySelectorAll('.wheel-item'));
+    let rotation = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startRotation = 0;
+    let lastInteraction = 0;
+    let autoplayId = null;
+
+    function updateOpacity(r){
+      items.forEach(item => {
+        const itemAngle = parseFloat(item.dataset.angle);
+        const rel = ((itemAngle + r) % 360 + 360) % 360;
+        const normalized = rel > 180 ? 360 - rel : rel;
+        const depth = normalized / 180; // 0 = front-facing, 1 = fully receded
+        item.style.opacity = Math.max(0.28, 1 - depth);
+
+        const card = item.querySelector('.wheel-card');
+        if(card){
+          card.style.filter = `blur(${(depth * 5).toFixed(2)}px) saturate(${(1 - depth * 0.35).toFixed(2)})`;
+          card.style.transform = `scale(${(1 - depth * 0.12).toFixed(3)})`;
+        }
+      });
+    }
+
+    function applyRotation(r, animate){
+      rotor.style.transition = animate ? 'transform .55s cubic-bezier(.22,.9,.32,1)' : 'none';
+      rotor.style.transform = `rotateY(${r}deg)`;
+      updateOpacity(r);
+    }
+
+    function step(){
+      if(!isDragging && Date.now() - lastInteraction > 1200){
+        rotation += 0.05;
+        applyRotation(rotation, false);
+      }
+      autoplayId = requestAnimationFrame(step);
+    }
+
+    // Drag / swipe to spin
+    rotor.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      rotor.classList.add('dragging');
+      stage.classList.add('spinning');
+      startX = e.clientX;
+      startRotation = rotation;
+      lastInteraction = Date.now();
+      rotor.setPointerCapture(e.pointerId);
+    });
+    rotor.addEventListener('pointermove', (e) => {
+      if(!isDragging) return;
+      rotation = startRotation + (e.clientX - startX) * 0.35;
+      applyRotation(rotation, false);
+      lastInteraction = Date.now();
+    });
+    function endDrag(){
+      if(!isDragging) return;
+      isDragging = false;
+      rotor.classList.remove('dragging');
+      rotation = Math.round(rotation / anglePerItem) * anglePerItem;
+      applyRotation(rotation, true);
+      lastInteraction = Date.now();
+      setTimeout(() => stage.classList.remove('spinning'), 550);
+    }
+    rotor.addEventListener('pointerup', endDrag);
+    rotor.addEventListener('pointerleave', endDrag);
+    rotor.addEventListener('pointercancel', endDrag);
+
+    document.getElementById('wheel-prev').addEventListener('click', () => {
+      rotation -= anglePerItem;
+      applyRotation(rotation, true);
+      lastInteraction = Date.now();
+    });
+    document.getElementById('wheel-next').addEventListener('click', () => {
+      rotation += anglePerItem;
+      applyRotation(rotation, true);
+      lastInteraction = Date.now();
+    });
+
+    // Scroll over the wheel to spin it live; snap the nearest card to
+    // center once scrolling settles.
+    let snapTimeout = null;
+    stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      stage.classList.add('spinning');
+      rotation += e.deltaY * 0.25;
+      applyRotation(rotation, false);
+      lastInteraction = Date.now();
+
+      clearTimeout(snapTimeout);
+      snapTimeout = setTimeout(() => {
+        rotation = Math.round(rotation / anglePerItem) * anglePerItem;
+        applyRotation(rotation, true);
+        lastInteraction = Date.now();
+        setTimeout(() => stage.classList.remove('spinning'), 550);
+      }, 160);
+    }, { passive: false });
+
+    applyRotation(rotation, false);
+    autoplayId = requestAnimationFrame(step);
+  })();
+</script>
+ 
 </body>
 </html>
